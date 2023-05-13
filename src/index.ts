@@ -1,11 +1,6 @@
 import { IntentOptions } from "./config/IntentOptions";
-// (async () => {
-//   const BOT = new Client({intents: IntentOptions});
-//   BOT.on("ready", () => console.log("Connected to Discord!"));
-//   await BOT.login(process.env.BOT_TOKEN);
-// })();
 import { Client } from "discord.js";
-// import { connectDatabase } from "./database/connectDatabase";
+import { dbConnect } from "./db/dbConnect";
 // import { validateEnv } from "./utils/validateEnv";
 
 (async () => {
@@ -16,7 +11,7 @@ import { Client } from "discord.js";
 
   BOT.on("ready", () => console.log("Connected to Discord!"));
 
-  // await connectDatabase();
+   await dbConnect();
 
   await BOT.login(process.env.BOT_TOKEN);
 })();
