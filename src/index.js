@@ -13,6 +13,7 @@ import {
 import { SelectMenuBuilder } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import jobPosting from "./commands/newJob.js";
+import updateJob from "./commands/updateJob.js";
 import { dbConnect } from "./models/index.js";
 import User from "./models/User.js";
 dbConnect();
@@ -138,11 +139,56 @@ client.on("interactionCreate", async (interaction) => {
           components: [],
         });
       }
+    } else if (interaction.commandName == "updatejob") {
+      try {
+        const findUser = await User.findOne({
+          discordId: interaction.user.id,
+        });
+        if (!findUser)
+          interaction.reply({ content: "You have no job postings to update!" });
+
+        const jobs = findUser.jobs.map((job) => {
+          return {
+            label: job.name,
+            value: job.id,
+          };
+        });
+        const selectJobPosting = new ActionRowBuilder().setComponents(
+          new SelectMenuBuilder()
+            .setCustomId("select_job_posting")
+            .setOptions(jobs)
+        );
+
+        // const actionRowComponent = new ActionRowBuilder().setComponents(
+        //   new SelectMenuBuilder().setCustomId("job_options").setOptions([
+        //     { label: "Waiting Response ⏳", value: "waiting" },
+        //     { label: "Offer/Interview ✅", value: "accepted" },
+        //     { label: "Rejected ❌", value: "rejected" },
+        //   ])
+        // );
+        // console.log(actionRowComponent);
+        // console.log(selectJobPosting);
+        const response = await interaction.reply({
+          content: "Please select the status of your job posting",
+          components: [selectJobPosting],
+          fetchReply: true,
+        });
+
+        const collectorFilter = (i) => i.user.id === interaction.user.id;
+        const status = await response.awaitMessageComponent({
+          filter: collectorFilter,
+          time: 60000,
+        });
+        console.log(status.values[0]);
+      } catch (err) {
+        console.log(err);
+        interaction.reply({ content: "Something went wrong!" });
+      }
     }
   }
 });
 async function main() {
-  const commands = [jobPosting];
+  const commands = [jobPosting, updateJob];
   try {
     console.log("Started refreshing application (/) commands.");
     await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), {
