@@ -12,7 +12,7 @@ import {
 } from "discord.js";
 import { SelectMenuBuilder } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
-import test from "./commands/test.js";
+import jobPosting from "./commands/newJob.js";
 import { dbConnect } from "./models/index.js";
 import User from "./models/User.js";
 dbConnect();
@@ -35,7 +35,7 @@ client.on("interactionCreate", async (interaction) => {
 
   if (interaction.isChatInputCommand()) {
     // console.log(interaction);
-    if (interaction.commandName === "testing") {
+    if (interaction.commandName === "newjob") {
       const modal = new ModalBuilder()
         .setTitle("New Job Posting")
         .setCustomId("newJob")
@@ -142,7 +142,7 @@ client.on("interactionCreate", async (interaction) => {
   }
 });
 async function main() {
-  const commands = [test];
+  const commands = [jobPosting];
   try {
     console.log("Started refreshing application (/) commands.");
     await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), {
