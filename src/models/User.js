@@ -8,6 +8,8 @@ const JobPostingSchema = new mongoose.Schema(
       enum: ["waiting", "rejected", "accepted"],
       default: "waiting",
     },
+    link: { type: String },
+    notes: { type: String },
   },
   {
     timestamps: true,
@@ -26,4 +28,4 @@ const UserSchema = new mongoose.Schema({
   },
   jobs: [JobPostingSchema],
 });
-export default mongoose.model('User',UserSchema)
+export default mongoose.model("User", UserSchema);
