@@ -79,10 +79,22 @@ client.on("interactionCreate", async (interaction) => {
             time: 60000,
           });
           console.log(status.values[0]);
+          console.log(interaction);
+          await status.reply({
+            content: "Your submission was received successfully!",
+          });
+          // await interaction.editReply({
+          // });
         }
+        // if (interaction.isModalSubmit()) {
+        //   console.log(interaction);
+        //   await interaction.reply({
+        //     content: "Your submission was received successfully!",
+        //   });
+        // }
       } catch (err) {
         console.log(err);
-        await interaction.followUp({
+        await interaction.editReply({
           content: "Confirmation not received within 1 minute, cancelling",
           components: [],
         });
