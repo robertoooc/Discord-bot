@@ -1,6 +1,9 @@
-import { SlashCommandBuilder } from '@discordjs/builders';
+import { SlashCommandBuilder } from "@discordjs/builders";
 const test = new SlashCommandBuilder()
-  .setName('testing')
-  .setDescription('hhg')
-
-export default test.toJSON()
+  .setName("testing")
+  .setDescription("hhg")
+  // .addStringOption((option) =>
+  //   option.setName("input")
+  //   .setDescription("The input to echo back")
+  // );
+export default test.toJSON();
