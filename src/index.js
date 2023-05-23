@@ -8,12 +8,14 @@ import {
   Routes,
   TextInputBuilder,
   TextInputStyle,
+  EmbedBuilder,
   Events,
 } from "discord.js";
 import { SelectMenuBuilder } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import jobPosting from "./commands/newJob.js";
 import updateJob from "./commands/updateJob.js";
+import getResults from "./commands/getResults.js";
 import { dbConnect } from "./models/index.js";
 import User from "./models/User.js";
 dbConnect();
@@ -205,11 +207,31 @@ client.on("interactionCreate", async (interaction) => {
         console.log(err);
         interaction.editReply({ content: "Something went wrong!" });
       }
+    }else if(interaction.commandName == "getresults"){
+
+      const getResults = await User.findOne({discordId: interaction.user.id}).select('jobs')
+      const waiting = getResults.jobs.filter((job) => job.status == 'waiting')
+      const accepted = getResults.jobs.filter((job) => job.status == 'accepted') 
+      const rejected = getResults.jobs.filter((job) => job.status == 'rejected')
+
+
+      console.log(waiting, accepted, rejected)
+      const embeddedMessage = new EmbedBuilder()
+      .setTitle("Job Postings")
+      .setDescription("Here are your job postings")
+      .addFields(
+        { name: 'Total Jobs Applied to', value: `${getResults.jobs.length}` },
+        { name: 'Jobs Waiting Response ⏳', value: `${waiting.length}`, inline: true },
+        { name: 'Jobs Accepted ✅', value: `${accepted.length}`, inline: true },
+        { name: 'Jobs Rejected ❌', value: `${rejected.length}`, inline: true },
+      )
+
+      await interaction.reply({embeds: [embeddedMessage]})
     }
   }
 });
 async function main() {
-  const commands = [jobPosting, updateJob];
+  const commands = [jobPosting, updateJob, getResults];
   try {
     console.log("Started refreshing application (/) commands.");
     await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), {
