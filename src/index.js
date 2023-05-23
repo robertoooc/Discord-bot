@@ -13,7 +13,9 @@ import {
 import { SelectMenuBuilder } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import test from "./commands/test.js";
-
+import { dbConnect } from "./models/index.js";
+import User from "./models/User.js";
+dbConnect();
 config();
 
 const client = new Client({
@@ -40,10 +42,24 @@ client.on("interactionCreate", async (interaction) => {
         .setComponents(
           new ActionRowBuilder().setComponents(
             new TextInputBuilder()
-              .setLabel("Job Posting Name/Details ?")
+              .setLabel("Job Posting Name")
               .setCustomId("jobPostingInput")
               .setStyle(TextInputStyle.Short)
               .setRequired(true)
+          ),
+          new ActionRowBuilder().setComponents(
+            new TextInputBuilder()
+              .setLabel("Job Posting Link")
+              .setCustomId("jobPostingLink")
+              .setStyle(TextInputStyle.Short)
+              .setRequired(false)
+          ),
+          new ActionRowBuilder().setComponents(
+            new TextInputBuilder()
+              .setLabel("Notes")
+              .setCustomId("notes")
+              .setStyle(TextInputStyle.Paragraph)
+              .setRequired(false)
           )
         );
       await interaction.showModal(modal);
@@ -58,14 +74,12 @@ client.on("interactionCreate", async (interaction) => {
           console.log(
             modalResponse.fields.getTextInputValue("jobPostingInput")
           );
-          // await modalResponse.reply({
-          //   content: "Your submission was received successfully!",
-          // });
+
           const actionRowComponent = new ActionRowBuilder().setComponents(
             new SelectMenuBuilder().setCustomId("job_options").setOptions([
-              { label: "Waiting Response ⏳", value: "Waiting" },
-              { label: "Offer/Interview ✅", value: "Offer/Interview" },
-              { label: "Rejected ❌", value: "Rejected" },
+              { label: "Waiting Response ⏳", value: "waiting" },
+              { label: "Offer/Interview ✅", value: "accepted" },
+              { label: "Rejected ❌", value: "rejected" },
             ])
           );
           const response = await modalResponse.reply({
@@ -80,18 +94,43 @@ client.on("interactionCreate", async (interaction) => {
           });
           console.log(status.values[0]);
           console.log(interaction);
+
           await status.reply({
             content: "Your submission was received successfully!",
           });
-          // await interaction.editReply({
-          // });
+
+          const findUser = await User.findOne({
+            discordId: interaction.user.id,
+          });
+          if (findUser) {
+            const job = {
+              name: modalResponse.fields.getTextInputValue("jobPostingInput"),
+              status: status.values[0],
+              link: modalResponse.fields.getTextInputValue("jobPostingLink"),
+              notes: modalResponse.fields.getTextInputValue("notes"),
+            };
+            findUser.jobs.push(job);
+            await findUser.save();
+          } else {
+            const user = await User.create({
+              username: interaction.user.username,
+              discordId: interaction.user.id,
+              jobs: [
+                {
+                  name: modalResponse.fields.getTextInputValue(
+                    "jobPostingInput"
+                  ),
+                  status: status.values[0],
+                  link: modalResponse.fields.getTextInputValue(
+                    "jobPostingLink"
+                  ),
+                  notes: modalResponse.fields.getTextInputValue("notes"),
+                },
+              ],
+            });
+            await user.save();
+          }
         }
-        // if (interaction.isModalSubmit()) {
-        //   console.log(interaction);
-        //   await interaction.reply({
-        //     content: "Your submission was received successfully!",
-        //   });
-        // }
       } catch (err) {
         console.log(err);
         await interaction.editReply({
@@ -99,27 +138,7 @@ client.on("interactionCreate", async (interaction) => {
           components: [],
         });
       }
-      // const response = await interaction.reply({
-      //   components: [actionRowComponent],
-      //   fetchReply: true,
-      // });
-
-      // try {
-      //   // console.log(confirmation);
-      //   // console.log(interaction.user.id);
-      // } catch (e) {
-      // }
     }
-    // else  {
-    // console.log("sub");
-    // console.log(interaction);
-    if (interaction.customId === "newJob") {
-      console.log(interaction.fields.getTextInputValue("jobPostingInput"));
-      interaction.reply({
-        content: "Your submission was received successfully!",
-      });
-    }
-    // }
   }
 });
 async function main() {
