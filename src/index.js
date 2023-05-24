@@ -10,6 +10,7 @@ import {
   TextInputStyle,
   EmbedBuilder,
   Events,
+  ButtonBuilder,
 } from "discord.js";
 import { SelectMenuBuilder } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
@@ -35,6 +36,10 @@ client.on("ready", () => console.log(`${client.user.tag} has logged in!`));
 
 client.on("interactionCreate", async (interaction) => {
   if (interaction.isChatInputCommand()) {
+    if (interaction.customId == "see_all") {
+      console.log("see all ,,,");
+    }
+
     if (interaction.commandName === "newjob") {
       const modal = new ModalBuilder()
         .setTitle("New Job Posting")
@@ -202,31 +207,91 @@ client.on("interactionCreate", async (interaction) => {
         job.status = udpateResponse.values[0];
         await findUser.save();
 
-        await udpateResponse.reply({content: "Your job posting has been updated!"})
+        await udpateResponse.reply({
+          content: "Your job posting has been updated!",
+        });
       } catch (err) {
         console.log(err);
         interaction.editReply({ content: "Something went wrong!" });
       }
-    }else if(interaction.commandName == "getresults"){
+    } else if (interaction.commandName == "getresults") {
+      const getResults = await User.findOne({
+        discordId: interaction.user.id,
+      }).select("jobs");
+      const waiting = getResults.jobs.filter((job) => job.status == "waiting");
+      const accepted = getResults.jobs.filter(
+        (job) => job.status == "accepted"
+      );
+      const rejected = getResults.jobs.filter(
+        (job) => job.status == "rejected"
+      );
 
-      const getResults = await User.findOne({discordId: interaction.user.id}).select('jobs')
-      const waiting = getResults.jobs.filter((job) => job.status == 'waiting')
-      const accepted = getResults.jobs.filter((job) => job.status == 'accepted') 
-      const rejected = getResults.jobs.filter((job) => job.status == 'rejected')
-
-
-      console.log(waiting, accepted, rejected)
+      console.log(waiting, accepted, rejected);
       const embeddedMessage = new EmbedBuilder()
-      .setTitle("Job Postings")
-      .setDescription("Here are your job postings")
-      .addFields(
-        { name: 'Total Jobs Applied to', value: `${getResults.jobs.length}` },
-        { name: 'Jobs Waiting Response ⏳', value: `${waiting.length}`, inline: true },
-        { name: 'Jobs Accepted ✅', value: `${accepted.length}`, inline: true },
-        { name: 'Jobs Rejected ❌', value: `${rejected.length}`, inline: true },
-      )
+        .setTitle("Job Postings")
+        .setDescription("Here are your job postings")
+        .addFields(
+          { name: "Total Jobs Applied to", value: `${getResults.jobs.length}` },
+          {
+            name: "Jobs Waiting Response ⏳",
+            value: `${waiting.length}`,
+            inline: true,
+          },
+          {
+            name: "Jobs Accepted ✅",
+            value: `${accepted.length}`,
+            inline: true,
+          },
+          {
+            name: "Jobs Rejected ❌",
+            value: `${rejected.length}`,
+            inline: true,
+          }
+        );
 
-      await interaction.reply({embeds: [embeddedMessage]})
+      const seeAll = new ButtonBuilder()
+        .setCustomId("see_all")
+        .setLabel("See All Jobs")
+        .setStyle("Primary");
+
+      const waitingButton = new ButtonBuilder()
+        .setCustomId("waiting_button")
+        .setLabel("See Waiting Response ⏳ Jobs")
+        .setStyle("Secondary");
+
+      const acceptedButton = new ButtonBuilder()
+        .setCustomId("accepted_button")
+        .setLabel("See Accepted ✅ Jobs")
+        .setStyle("Success");
+
+      const rejectedButton = new ButtonBuilder()
+        .setCustomId("rejected_button")
+        .setLabel("See Rejected ❌ Jobs")
+        .setStyle("Danger");
+
+      const row = new ActionRowBuilder().setComponents(
+        seeAll,
+        waitingButton,
+        acceptedButton,
+        rejectedButton
+      );
+
+      const fetchReply = await interaction.reply({
+        embeds: [embeddedMessage],
+        components: [row],
+        fetchReply: true,
+      });
+
+      const collectResponse = await fetchReply.awaitMessageComponent({
+        filter: (i) => i.user.id === interaction.user.id,
+        time: 60000,
+      });
+      console.log(collectResponse);
+      console.log(collectResponse.customId);
+
+    } else {
+      console.log(interaction.customId);
+      await interaction.editReply("Something went wrong!");
     }
   }
 });
