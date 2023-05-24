@@ -275,19 +275,23 @@ client.on("interactionCreate", async (interaction) => {
         acceptedButton,
         rejectedButton
       );
-
-      const fetchReply = await interaction.reply({
-        embeds: [embeddedMessage],
-        components: [row],
-        fetchReply: true,
-      });
-
-      const collectResponse = await fetchReply.awaitMessageComponent({
-        filter: (i) => i.user.id === interaction.user.id,
-        time: 60000,
-      });
-      console.log(collectResponse);
-      console.log(collectResponse.customId);
+        try{
+          const fetchReply = await interaction.reply({
+            embeds: [embeddedMessage],
+            components: [row],
+            fetchReply: true,
+          });
+    
+          const collectResponse = await fetchReply.awaitMessageComponent({
+            filter: (i) => i.user.id === interaction.user.id,
+            time: 60000,
+          });
+          console.log(collectResponse);
+          console.log(collectResponse.customId);
+        }catch(err){
+            console.log(err)
+            await interaction.editReply("Session Timed Out!");
+        }
 
     } else {
       console.log(interaction.customId);
