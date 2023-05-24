@@ -275,24 +275,95 @@ client.on("interactionCreate", async (interaction) => {
         acceptedButton,
         rejectedButton
       );
-        try{
-          const fetchReply = await interaction.reply({
-            embeds: [embeddedMessage],
-            components: [row],
-            fetchReply: true,
-          });
-    
-          const collectResponse = await fetchReply.awaitMessageComponent({
-            filter: (i) => i.user.id === interaction.user.id,
-            time: 60000,
-          });
-          console.log(collectResponse);
-          console.log(collectResponse.customId);
-        }catch(err){
-            console.log(err)
-            await interaction.editReply("Session Timed Out!");
-        }
+      try {
+        const fetchReply = await interaction.reply({
+          embeds: [embeddedMessage],
+          components: [row],
+          fetchReply: true,
+        });
 
+        const collectResponse = await fetchReply.awaitMessageComponent({
+          filter: (i) => i.user.id === interaction.user.id,
+          time: 60000,
+        });
+        console.log(collectResponse);
+        console.log(collectResponse.customId);
+
+        if (collectResponse.customId == "see_all") {
+          const allJobs = getResults.jobs.map((job) => {
+            return {
+              name: job.name,
+              value: job.status,
+            };
+          });
+
+          const embeddedMessage = new EmbedBuilder()
+            .setTitle("All Job Postings")
+            .setDescription("Here are your job postings")
+            .addFields(allJobs);
+
+          await collectResponse.reply({
+            embeds: [embeddedMessage],
+          });
+        } else if (collectResponse.customId == "waiting_button") {
+          const waitingJobs = getResults.jobs
+            .filter((job) => job.status == "waiting")
+            .map((job) => {
+              return {
+                name: job.name,
+                value: job.status,
+              };
+            });
+
+          const embeddedMessage = new EmbedBuilder()
+            .setTitle("Waiting Response ⏳ Job Postings")
+            .setDescription("Here are your job postings")
+            .addFields(waitingJobs);
+
+          await collectResponse.reply({
+            embeds: [embeddedMessage],
+          });
+        } else if (collectResponse.customId == "accepted_button") {
+          const acceptedJobs = getResults.jobs
+            .filter((job) => job.status == "accepted")
+            .map((job) => {
+              return {
+                name: job.name,
+                value: job.status,
+              };
+            });
+
+          const embeddedMessage = new EmbedBuilder()
+            .setTitle("Accepted ✅ Job Postings")
+            .setDescription("Here are your job postings")
+            .addFields(acceptedJobs);
+
+          await collectResponse.reply({
+            embeds: [embeddedMessage],
+          });
+        } else if (collectResponse.customId == "rejected_button") {
+          const rejectedJobs = getResults.jobs
+            .filter((job) => job.status == "rejected")
+            .map((job) => {
+              return {
+                name: job.name,
+                value: job.status,
+              };
+            });
+
+          const embeddedMessage = new EmbedBuilder()
+            .setTitle("Rejected ❌ Job Postings")
+            .setDescription("Here are your job postings")
+            .addFields(rejectedJobs);
+
+          await collectResponse.reply({
+            embeds: [embeddedMessage],
+          });
+        }
+      } catch (err) {
+        console.log(err);
+        await interaction.editReply("Session Timed Out!");
+      }
     } else {
       console.log(interaction.customId);
       await interaction.editReply("Something went wrong!");
