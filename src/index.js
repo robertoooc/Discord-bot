@@ -212,7 +212,7 @@ client.on("interactionCreate", async (interaction) => {
       const getResults = await User.findOne({
         discordId: interaction.user.id,
       }).select("jobs");
-      if(getResults){
+      if(getResults.jobs.length !== 0){
 
         const waiting = getResults.jobs.filter((job) => job.status == "waiting");
         const accepted = getResults.jobs.filter(
