@@ -58,13 +58,6 @@ client.on("interactionCreate", async (interaction) => {
               .setCustomId("jobPostingLink")
               .setStyle(TextInputStyle.Short)
               .setRequired(false)
-          ),
-          new ActionRowBuilder().setComponents(
-            new TextInputBuilder()
-              .setLabel("Notes")
-              .setCustomId("notes")
-              .setStyle(TextInputStyle.Paragraph)
-              .setRequired(false)
           )
         );
 
@@ -112,7 +105,6 @@ client.on("interactionCreate", async (interaction) => {
               name: modalResponse.fields.getTextInputValue("jobPostingInput"),
               status: status.values[0],
               link: modalResponse.fields.getTextInputValue("jobPostingLink"),
-              notes: modalResponse.fields.getTextInputValue("notes"),
             };
 
             findUser.jobs.push(job);
@@ -130,7 +122,6 @@ client.on("interactionCreate", async (interaction) => {
                   link: modalResponse.fields.getTextInputValue(
                     "jobPostingLink"
                   ),
-                  notes: modalResponse.fields.getTextInputValue("notes"),
                 },
               ],
             });

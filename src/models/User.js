@@ -9,7 +9,6 @@ const JobPostingSchema = new mongoose.Schema(
       default: "waiting",
     },
     link: { type: String },
-    notes: { type: String },
   },
   {
     timestamps: true,
