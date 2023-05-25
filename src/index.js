@@ -1,4 +1,5 @@
-import { config } from "dotenv";
+// import { config } from "dotenv";
+require('dotenv').config();
 import {
   ActionRowBuilder,
   Client,
@@ -20,7 +21,7 @@ import getResults from "./commands/getResults.js";
 import { dbConnect } from "./models/index.js";
 import User from "./models/User.js";
 dbConnect();
-config();
+// config();
 
 const client = new Client({
   intents: [
