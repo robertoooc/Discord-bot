@@ -1,5 +1,7 @@
 // import { config } from "dotenv";
-require('dotenv').config();
+// require('dotenv').config();
+import dotenv from "dotenv";
+dotenv.config();
 import {
   ActionRowBuilder,
   Client,
