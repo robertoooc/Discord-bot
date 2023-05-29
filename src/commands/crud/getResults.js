@@ -1,10 +1,14 @@
-const {SlashCommandBuilder} = require('discord.js');
-
+const {
+  SlashCommandBuilder,
+  ModalBuilder,
+  ActionRowBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+} = require("discord.js");
+const { SelectMenuBuilder } = require("@discordjs/builders");
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('getresults')
-    .setDescription('Get Results'),
-  async execute(interaction) {
-    return interaction.reply('Get Results');
-  }
-}
+    .setName("getresults")
+    .setDescription("Get Results to all Job Postings"),
+  async execute(interaction) {},
+};
