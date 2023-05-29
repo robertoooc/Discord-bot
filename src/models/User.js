@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-
+// import mongoose from "mongoose";
+const mongoose = require("mongoose");
 const JobPostingSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
@@ -27,4 +27,4 @@ const UserSchema = new mongoose.Schema({
   },
   jobs: [JobPostingSchema],
 });
-export default mongoose.model("User", UserSchema);
+module.exports= mongoose.model("User", UserSchema);
