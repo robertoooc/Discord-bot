@@ -28,7 +28,7 @@ module.exports = {
         );
 
         const response = await interaction.reply({
-          content: "Please select the status of your job posting",
+          content: "Please select a job posting to remove.",
           components: [selectJobPosting],
           fetchReply: true,
         });
@@ -44,6 +44,14 @@ module.exports = {
 
         const job = findUser.jobs.find((job) => job.id == status.values[0]);
         console.log(job);
+
+        findUser.jobs.pull(job);
+        await findUser.save();
+        console.log(findUser.jobs);
+
+        await status.reply({
+          content: `Job posting for ${job.name} has been removed.`,
+        })
       }
     } catch (err) {
       console.log(err);
