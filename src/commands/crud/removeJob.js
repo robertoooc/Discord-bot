@@ -4,6 +4,7 @@ const {
   EmbedBuilder,
   ButtonBuilder,
 } = require("discord.js");
+const { SelectMenuBuilder } = require("@discordjs/builders");
 const db = require("../../models");
 module.exports = {
   data: new SlashCommandBuilder()
