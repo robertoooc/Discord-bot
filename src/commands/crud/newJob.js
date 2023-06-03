@@ -45,11 +45,15 @@ module.exports = {
 
       if (modalResponse.isModalSubmit()) {
         const actionRowComponent = new ActionRowBuilder().setComponents(
-          new SelectMenuBuilder().setCustomId("job_options").setOptions([
-            { label: "Waiting Response ⏳", value: "waiting" },
-            { label: "Offer/Interview ✅", value: "accepted" },
-            { label: "Rejected ❌", value: "rejected" },
-          ])
+          new SelectMenuBuilder()
+            .setCustomId("job_options")
+            .setOptions([
+              { label: "Waiting Response ⏳", value: "waiting" },
+              { label: "Offer/Interview ✅", value: "accepted" },
+              { label: "Rejected ❌", value: "rejected" },
+            ])
+            .setMinValues(1)
+            .setMaxValues(1)
         );
 
         const response = await modalResponse.reply({
@@ -64,11 +68,13 @@ module.exports = {
           filter: collectorFilter,
           time: 60000,
         });
+        const jobName =
+          modalResponse.fields.getTextInputValue("jobPostingInput");
 
         await status.reply({
-          content: "Your submission was received successfully!",
+          content: `Job posting for ${jobName} has been added.`,
         });
-        console.log(interaction.user.id)
+        console.log(interaction.user.id);
         const findUser = await db.User.findOne({
           discordId: interaction.user.id,
         });

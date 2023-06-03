@@ -19,12 +19,8 @@ module.exports = {
       });
 
     const waiting = getResults.jobs.filter((job) => job.status == "waiting");
-    const accepted = getResults.jobs.filter(
-      (job) => job.status == "accepted"
-    );
-    const rejected = getResults.jobs.filter(
-      (job) => job.status == "rejected"
-    );
+    const accepted = getResults.jobs.filter((job) => job.status == "accepted");
+    const rejected = getResults.jobs.filter((job) => job.status == "rejected");
 
     console.log(waiting, accepted, rejected);
     const embeddedMessage = new EmbedBuilder()

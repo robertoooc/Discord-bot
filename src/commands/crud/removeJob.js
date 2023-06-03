@@ -25,6 +25,8 @@ module.exports = {
           new SelectMenuBuilder()
             .setCustomId("remove_job_posting")
             .setOptions(jobs)
+            .setMinValues(1)
+            .setMaxValues(1)
         );
 
         const response = await interaction.reply({
@@ -51,7 +53,7 @@ module.exports = {
 
         await status.reply({
           content: `Job posting for ${job.name} has been removed.`,
-        })
+        });
       }
     } catch (err) {
       console.log(err);

@@ -46,11 +46,15 @@ module.exports = {
         console.log(job);
 
         const updateStatus = new ActionRowBuilder().setComponents(
-          new SelectMenuBuilder().setCustomId("update_status").setOptions([
-            { label: "Waiting Response ⏳", value: "waiting" },
-            { label: "Offer/Interview ✅", value: "accepted" },
-            { label: "Rejected ❌", value: "rejected" },
-          ])
+          new SelectMenuBuilder()
+            .setCustomId("update_status")
+            .setOptions([
+              { label: "Waiting Response ⏳", value: "waiting" },
+              { label: "Offer/Interview ✅", value: "accepted" },
+              { label: "Rejected ❌", value: "rejected" },
+            ])
+            .setMinValues(1)
+            .setMaxValues(1)
         );
 
         const updateResponse = await status.reply({
@@ -69,7 +73,7 @@ module.exports = {
         await findUser.save();
 
         await udpateResponse.reply({
-          content: "Your job posting has been updated!",
+          content: `Job posting for ${job.name} has been updated.`,
         });
       }
     } catch (err) {
