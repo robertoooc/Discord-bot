@@ -5,11 +5,14 @@ This discord bot enables users to keep track of their job applications as oppose
 <a href='https://discord.com/api/oauth2/authorize?client_id=1106759915466403870&permissions=26829587381312&scope=bot' target="_blank">Invite</a>
 
 # Commands to Use
-## /newjob 
+## /newJob 
 ![/newjobCommand](gifs/newJob.gif)
 
-## /getresults
-![/getresultsComamnd](gifs/getResultsAll.gif)
+## /getResults
+![/getresultsComamnd](gifs/getResults.gif)
 
-## /updatejob
+## /updateJob
 ![/updatejobCommand](gifs/updateJob.gif)
+
+## /removeJob
+![/removejobCommand](gifs/removeJob.gif)
