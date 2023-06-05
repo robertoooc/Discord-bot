@@ -90,9 +90,20 @@ module.exports = {
 
       if (collectResponse.customId == "see_all") {
         const allJobs = getResults.jobs.map((job) => {
+          let val, link;
+          job.link
+            ? (link = `[Link](${job.link})`)
+            : (link = "No Link Provided");
+          if (job.status == "waiting") {
+            val = "waiting ⏳";
+          } else if (job.status == "accepted") {
+            val = "accepted ✅";
+          } else if (job.status == "rejected") {
+            val = "rejected ❌";
+          }
           return {
             name: job.name,
-            value: job.status,
+            value: `${val} - ${link}`,
           };
         });
 
@@ -108,9 +119,20 @@ module.exports = {
         const waitingJobs = getResults.jobs
           .filter((job) => job.status == "waiting")
           .map((job) => {
+            let val, link;
+            job.link
+              ? (link = `[Link](${job.link})`)
+              : (link = "No Link Provided");
+            if (job.status == "waiting") {
+              val = "waiting ⏳";
+            } else if (job.status == "accepted") {
+              val = "accepted ✅";
+            } else if (job.status == "rejected") {
+              val = "rejected ❌";
+            }
             return {
               name: job.name,
-              value: job.status,
+              value: `${val} - ${link}`,
             };
           });
 
@@ -126,9 +148,20 @@ module.exports = {
         const acceptedJobs = getResults.jobs
           .filter((job) => job.status == "accepted")
           .map((job) => {
+            let val, link;
+            job.link
+              ? (link = `[Link](${job.link})`)
+              : (link = "No Link Provided");
+            if (job.status == "waiting") {
+              val = "waiting ⏳";
+            } else if (job.status == "accepted") {
+              val = "accepted ✅";
+            } else if (job.status == "rejected") {
+              val = "rejected ❌";
+            }
             return {
               name: job.name,
-              value: job.status,
+              value: `${val} - ${link}`,
             };
           });
 
@@ -144,9 +177,20 @@ module.exports = {
         const rejectedJobs = getResults.jobs
           .filter((job) => job.status == "rejected")
           .map((job) => {
+            let val, link;
+            job.link
+              ? (link = `[Link](${job.link})`)
+              : (link = "No Link Provided");
+            if (job.status == "waiting") {
+              val = "waiting ⏳";
+            } else if (job.status == "accepted") {
+              val = "accepted ✅";
+            } else if (job.status == "rejected") {
+              val = "rejected ❌";
+            }
             return {
               name: job.name,
-              value: job.status,
+              value: `${val} - ${link}`,
             };
           });
 
