@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, ActionRowBuilder } = require("discord.js");
 const { SelectMenuBuilder } = require("@discordjs/builders");
 const db = require("../../models");
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("updatejob")
@@ -11,15 +12,13 @@ module.exports = {
         discordId: interaction.user.id,
       });
 
-      if (!findUser || findUser.jobs == null) {
-        interaction.reply({ content: "You have no job postings to update!" });
+      if (!findUser || !findUser.jobs) {
+        await interaction.reply({ content: "You have no job postings to update!" });
       } else {
-        const jobs = findUser.jobs.map((job) => {
-          return {
-            label: job.name,
-            value: job.id,
-          };
-        });
+        const jobs = findUser.jobs.map((job) => ({
+          label: job.name,
+          value: job.id,
+        }));
 
         const selectJobPosting = new ActionRowBuilder().setComponents(
           new SelectMenuBuilder()
@@ -28,7 +27,7 @@ module.exports = {
         );
 
         const response = await interaction.reply({
-          content: "Please select the status of your job posting",
+          content: "Please select the job posting to update.",
           components: [selectJobPosting],
           fetchReply: true,
         });
@@ -40,10 +39,8 @@ module.exports = {
           time: 60000,
         });
 
-        console.log(status.values[0]);
-
-        const job = findUser.jobs.find((job) => job.id == status.values[0]);
-        console.log(job);
+        const selectedJobId = status.values[0];
+        const job = findUser.jobs.find((job) => job.id === selectedJobId);
 
         const updateStatus = new ActionRowBuilder().setComponents(
           new SelectMenuBuilder()
@@ -58,27 +55,28 @@ module.exports = {
         );
 
         const updateResponse = await status.reply({
-          content: "Please update the status of your job posting",
+          content: "Please update the status of your job posting.",
           components: [updateStatus],
           fetchReply: true,
         });
 
-        const udpateResponse = await updateResponse.awaitMessageComponent({
+        const updateStatusMessage = await updateResponse.awaitMessageComponent({
           filter: collectorFilter,
           time: 60000,
         });
-        console.log(udpateResponse.values[0]);
 
-        job.status = udpateResponse.values[0];
+        const updatedStatusValue = updateStatusMessage.values[0];
+
+        job.status = updatedStatusValue;
         await findUser.save();
 
-        await udpateResponse.reply({
+        await updateStatusMessage.reply({
           content: `Job posting for ${job.name} has been updated.`,
         });
       }
     } catch (err) {
       console.log(err);
-      interaction.editReply({ content: "Something went wrong!" });
+      await interaction.editReply({ content: "Something went wrong!" });
     }
   },
 };
