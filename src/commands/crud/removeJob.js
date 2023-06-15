@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, ActionRowBuilder } = require("discord.js");
 const { SelectMenuBuilder } = require("@discordjs/builders");
 const db = require("../../models");
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("removejob")
@@ -11,15 +12,13 @@ module.exports = {
         discordId: interaction.user.id,
       });
 
-      if (!findUser || findUser.jobs == null) {
-        interaction.reply({ content: "You have no job postings to update!" });
+      if (!findUser || !findUser.jobs) {
+        await interaction.reply({ content: "You have no job postings to update!" });
       } else {
-        const jobs = findUser.jobs.map((job) => {
-          return {
-            label: job.name,
-            value: job.id,
-          };
-        });
+        const jobs = findUser.jobs.map((job) => ({
+          label: job.name,
+          value: job.id,
+        }));
 
         const selectJobPosting = new ActionRowBuilder().setComponents(
           new SelectMenuBuilder()
@@ -42,14 +41,11 @@ module.exports = {
           time: 60000,
         });
 
-        console.log(status.values[0]);
-
-        const job = findUser.jobs.find((job) => job.id == status.values[0]);
-        console.log(job);
+        const selectedJobId = status.values[0];
+        const job = findUser.jobs.find((job) => job.id === selectedJobId);
 
         findUser.jobs.pull(job);
         await findUser.save();
-        console.log(findUser.jobs);
 
         await status.reply({
           content: `Job posting for ${job.name} has been removed.`,
@@ -57,7 +53,7 @@ module.exports = {
       }
     } catch (err) {
       console.log(err);
-      interaction.editReply({ content: "Something went wrong!" });
+      await interaction.editReply({ content: "Something went wrong!" });
     }
   },
 };
