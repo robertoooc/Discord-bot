@@ -14,13 +14,16 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 async function generateCoverLetter(resume, jobPosting) {
-  const prompt = `Write a cover letter for a job application. Tone: conversational, startan, use less corporate jargon.\nThe Resume: ${resume}\nThe Job Posting: ${jobPosting}`;
+  const prompt = `Write a cover letter for a job application. The Resume: ${resume} The Job Posting: ${jobPosting}. Focus on the details of the resume and how they relate to the job posting or can be used to show your skills.`;
   try {
     const response = await openai.createCompletion({
       model: "text-davinci-003",
       prompt: prompt,
-      temperature: 0.3,
-      max_tokens: 500,
+      temperature: 0.1,
+      max_tokens: 1000,
+      top_p: 0.0,
+      frequency_penalty: 0.0,
+      presence_penalty: 0.0,
     });
 
     console.log(response.data.choices[0].text.trim());
