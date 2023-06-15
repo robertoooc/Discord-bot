@@ -13,16 +13,16 @@ module.exports = {
     const getResults = await db.User.findOne({
       discordId: interaction.user.id,
     }).select("jobs");
-    if (!getResults)
+    if (!getResults) {
       return interaction.reply({
         content: "You have no job postings to view!",
       });
+    }
 
-    const waiting = getResults.jobs.filter((job) => job.status == "waiting");
-    const accepted = getResults.jobs.filter((job) => job.status == "accepted");
-    const rejected = getResults.jobs.filter((job) => job.status == "rejected");
+    const waiting = getResults.jobs.filter((job) => job.status === "waiting");
+    const accepted = getResults.jobs.filter((job) => job.status === "accepted");
+    const rejected = getResults.jobs.filter((job) => job.status === "rejected");
 
-    console.log(waiting, accepted, rejected);
     const embeddedMessage = new EmbedBuilder()
       .setTitle("Job Postings")
       .setDescription("Here are your job postings")
@@ -74,6 +74,7 @@ module.exports = {
       acceptedButton,
       rejectedButton
     );
+
     try {
       const fetchReply = await interaction.reply({
         embeds: [embeddedMessage],
@@ -85,27 +86,35 @@ module.exports = {
         filter: (i) => i.user.id === interaction.user.id,
         time: 60000,
       });
-      console.log(collectResponse);
-      console.log(collectResponse.customId);
 
-      if (collectResponse.customId == "see_all") {
-        const allJobs = getResults.jobs.map((job) => {
-          let val, link;
-          job.link
-            ? (link = `[Link](${job.link})`)
-            : (link = "No Link Provided");
-          if (job.status == "waiting") {
-            val = "waiting ⏳";
-          } else if (job.status == "accepted") {
-            val = "accepted ✅";
-          } else if (job.status == "rejected") {
-            val = "rejected ❌";
-          }
-          return {
-            name: job.name,
-            value: `${val} - ${link}`,
-          };
-        });
+      const filterJobsByStatus = (status) => {
+        return getResults.jobs
+          .filter((job) => job.status === status)
+          .map((job) => {
+            let val, link;
+            job.link
+              ? (link = `[Link](${job.link})`)
+              : (link = "No Link Provided");
+
+            if (job.status === "waiting") {
+              val = "waiting ⏳";
+            } else if (job.status === "accepted") {
+              val = "accepted ✅";
+            } else if (job.status === "rejected") {
+              val = "rejected ❌";
+            }
+
+            return {
+              name: job.name,
+              value: `${val} - ${link}`,
+            };
+          });
+      };
+
+      if (collectResponse.customId === "see_all") {
+        const allJobs = filterJobsByStatus("waiting")
+          .concat(filterJobsByStatus("accepted"))
+          .concat(filterJobsByStatus("rejected"));
 
         const embeddedMessage = new EmbedBuilder()
           .setTitle("All Job Postings")
@@ -115,26 +124,8 @@ module.exports = {
         await collectResponse.reply({
           embeds: [embeddedMessage],
         });
-      } else if (collectResponse.customId == "waiting_button") {
-        const waitingJobs = getResults.jobs
-          .filter((job) => job.status == "waiting")
-          .map((job) => {
-            let val, link;
-            job.link
-              ? (link = `[Link](${job.link})`)
-              : (link = "No Link Provided");
-            if (job.status == "waiting") {
-              val = "waiting ⏳";
-            } else if (job.status == "accepted") {
-              val = "accepted ✅";
-            } else if (job.status == "rejected") {
-              val = "rejected ❌";
-            }
-            return {
-              name: job.name,
-              value: `${val} - ${link}`,
-            };
-          });
+      } else if (collectResponse.customId === "waiting_button") {
+        const waitingJobs = filterJobsByStatus("waiting");
 
         const embeddedMessage = new EmbedBuilder()
           .setTitle("Waiting Response ⏳ Job Postings")
@@ -144,26 +135,8 @@ module.exports = {
         await collectResponse.reply({
           embeds: [embeddedMessage],
         });
-      } else if (collectResponse.customId == "accepted_button") {
-        const acceptedJobs = getResults.jobs
-          .filter((job) => job.status == "accepted")
-          .map((job) => {
-            let val, link;
-            job.link
-              ? (link = `[Link](${job.link})`)
-              : (link = "No Link Provided");
-            if (job.status == "waiting") {
-              val = "waiting ⏳";
-            } else if (job.status == "accepted") {
-              val = "accepted ✅";
-            } else if (job.status == "rejected") {
-              val = "rejected ❌";
-            }
-            return {
-              name: job.name,
-              value: `${val} - ${link}`,
-            };
-          });
+      } else if (collectResponse.customId === "accepted_button") {
+        const acceptedJobs = filterJobsByStatus("accepted");
 
         const embeddedMessage = new EmbedBuilder()
           .setTitle("Accepted ✅ Job Postings")
@@ -173,26 +146,8 @@ module.exports = {
         await collectResponse.reply({
           embeds: [embeddedMessage],
         });
-      } else if (collectResponse.customId == "rejected_button") {
-        const rejectedJobs = getResults.jobs
-          .filter((job) => job.status == "rejected")
-          .map((job) => {
-            let val, link;
-            job.link
-              ? (link = `[Link](${job.link})`)
-              : (link = "No Link Provided");
-            if (job.status == "waiting") {
-              val = "waiting ⏳";
-            } else if (job.status == "accepted") {
-              val = "accepted ✅";
-            } else if (job.status == "rejected") {
-              val = "rejected ❌";
-            }
-            return {
-              name: job.name,
-              value: `${val} - ${link}`,
-            };
-          });
+      } else if (collectResponse.customId === "rejected_button") {
+        const rejectedJobs = filterJobsByStatus("rejected");
 
         const embeddedMessage = new EmbedBuilder()
           .setTitle("Rejected ❌ Job Postings")
