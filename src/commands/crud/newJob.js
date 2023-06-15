@@ -6,14 +6,13 @@ const {
   TextInputStyle,
 } = require("discord.js");
 const db = require("../../models");
-
 const { SelectMenuBuilder } = require("@discordjs/builders");
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("newjob")
     .setDescription("Insert New Job Posting"),
   async execute(interaction) {
-    // return interaction.reply("Get Results");
     const modal = new ModalBuilder()
       .setTitle("New Job Posting")
       .setCustomId("newJob")
@@ -38,8 +37,7 @@ module.exports = {
 
     try {
       const modalResponse = await interaction.awaitModalSubmit({
-        filter: (i) =>
-          i.customId == "newJob" && i.user.id === interaction.user.id,
+        filter: (i) => i.customId === "newJob" && i.user.id === interaction.user.id,
         time: 60000,
       });
 
@@ -68,39 +66,31 @@ module.exports = {
           filter: collectorFilter,
           time: 60000,
         });
-        const jobName =
-          modalResponse.fields.getTextInputValue("jobPostingInput");
+
+        const jobName = modalResponse.fields.getTextInputValue("jobPostingInput");
 
         await status.reply({
           content: `Job posting for ${jobName} has been added.`,
         });
-        console.log(interaction.user.id);
-        const findUser = await db.User.findOne({
-          discordId: interaction.user.id,
-        });
 
-        if (findUser) {
-          const job = {
-            name: modalResponse.fields.getTextInputValue("jobPostingInput"),
-            status: status.values[0],
-            link: modalResponse.fields.getTextInputValue("jobPostingLink"),
-          };
+        const user = await db.User.findOne({ discordId: interaction.user.id });
 
-          findUser.jobs.push(job);
-          await findUser.save();
+        const job = {
+          name: modalResponse.fields.getTextInputValue("jobPostingInput"),
+          status: status.values[0],
+          link: modalResponse.fields.getTextInputValue("jobPostingLink"),
+        };
+
+        if (user) {
+          user.jobs.push(job);
+          await user.save();
         } else {
-          const user = await db.User.create({
+          const newUser = await db.User.create({
             username: interaction.user.username,
             discordId: interaction.user.id,
-            jobs: [
-              {
-                name: modalResponse.fields.getTextInputValue("jobPostingInput"),
-                status: status.values[0],
-                link: modalResponse.fields.getTextInputValue("jobPostingLink"),
-              },
-            ],
+            jobs: [job],
           });
-          await user.save();
+          await newUser.save();
         }
       }
       return;
