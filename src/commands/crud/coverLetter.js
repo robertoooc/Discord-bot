@@ -26,7 +26,8 @@ async function generateCoverLetter(resume, jobPosting) {
       presence_penalty: 0.6,
     });
 
-    console.log(response.data.choices[0].text.trim());
+    // console.log(response.data.choices[0].text.trim());
+    return response.data.choices[0].text.trim();
   } catch (error) {
     console.log("Error:", error.response.data.error);
   }
@@ -62,14 +63,22 @@ module.exports = {
       const modalResponse = await interaction.awaitModalSubmit({
         filter: (i) =>
           i.customId === "coverLetter" && i.user.id === interaction.user.id,
-        time: 60000,
+        time: 300000,
       });
       if (modalResponse.isModalSubmit()) {
+        await modalResponse.reply({
+          content: "Generating Cover Letter...",
+          ephemeral: true,
+        })
         const resume = modalResponse.fields.getTextInputValue("resume");
         const jobPosting = modalResponse.fields.getTextInputValue(
           "jobPostingDescription"
         );
-        await generateCoverLetter(resume, jobPosting);
+        const coverLetter = await generateCoverLetter(resume, jobPosting);
+        await modalResponse.editReply({
+          content: `Here is your cover letter: \n ${coverLetter}`,
+          ephemeral: true,
+        })
       }
     } catch (err) {
       console.log(err);
