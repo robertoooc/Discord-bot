@@ -26,5 +26,9 @@ const UserSchema = new mongoose.Schema({
     unique: true,
   },
   jobs: [JobPostingSchema],
+  resume:{
+    type: String,
+    required: false,
+  }
 });
-module.exports= mongoose.model("User", UserSchema);
+module.exports = mongoose.model("User", UserSchema);
