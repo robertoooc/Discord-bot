@@ -69,7 +69,7 @@ module.exports = {
         await modalResponse.reply({
           content: "Generating Cover Letter...",
           ephemeral: true,
-        })
+        });
         const resume = modalResponse.fields.getTextInputValue("resume");
         const jobPosting = modalResponse.fields.getTextInputValue(
           "jobPostingDescription"
@@ -78,7 +78,7 @@ module.exports = {
         await modalResponse.editReply({
           content: `Here is your cover letter: \n ${coverLetter}`,
           ephemeral: true,
-        })
+        });
       }
     } catch (err) {
       console.log(err);
