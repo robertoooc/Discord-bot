@@ -40,7 +40,6 @@ module.exports = {
     .setName("createcoverletter")
     .setDescription("Generate a Cover Letter"),
   async execute(interaction) {
-    // let oldResume = false;
     const findUser = await db.User.findOne({
       discordId: interaction.user.id,
     }).populate("resume");
