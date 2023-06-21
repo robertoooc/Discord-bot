@@ -55,6 +55,7 @@ async function getResume(user, interaction) {
         ephemeral: true,
       });
     }
+    return;
   } catch (err) {
     console.error("Error retrieving resume:", err);
     await interaction.editReply({

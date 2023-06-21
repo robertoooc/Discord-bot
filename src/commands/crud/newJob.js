@@ -33,11 +33,12 @@ module.exports = {
         )
       );
 
-    await interaction.showModal(modal);
+    await interaction.showModal(modal, { ephemeral: true });
 
     try {
       const modalResponse = await interaction.awaitModalSubmit({
-        filter: (i) => i.customId === "newJob" && i.user.id === interaction.user.id,
+        filter: (i) =>
+          i.customId === "newJob" && i.user.id === interaction.user.id,
         time: 60000,
       });
 
@@ -58,6 +59,7 @@ module.exports = {
           content: "Please select the status of your job posting",
           components: [actionRowComponent],
           fetchReply: true,
+          ephemeral: true,
         });
 
         const collectorFilter = (i) => i.user.id === interaction.user.id;
@@ -67,10 +69,12 @@ module.exports = {
           time: 60000,
         });
 
-        const jobName = modalResponse.fields.getTextInputValue("jobPostingInput");
+        const jobName =
+          modalResponse.fields.getTextInputValue("jobPostingInput");
 
         await status.reply({
           content: `Job posting for ${jobName} has been added.`,
+          ephemeral: true,
         });
 
         const user = await db.User.findOne({ discordId: interaction.user.id });
@@ -99,6 +103,7 @@ module.exports = {
       await interaction.editReply({
         content: "Confirmation not received within 1 minute, cancelling",
         components: [],
+        ephemeral: true,
       });
     }
   },

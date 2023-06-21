@@ -16,6 +16,7 @@ module.exports = {
     if (!getResults) {
       return interaction.reply({
         content: "You have no job postings to view!",
+        ephemeral: true,
       });
     }
 
@@ -46,7 +47,8 @@ module.exports = {
           value: `${rejected.length}`,
           inline: true,
         }
-      );
+      )
+      .setFooter("Click on the buttons below to see the job postings");
 
     const seeAll = new ButtonBuilder()
       .setCustomId("see_all")
@@ -80,11 +82,12 @@ module.exports = {
         embeds: [embeddedMessage],
         components: [row],
         fetchReply: true,
+        ephemeral: true,
       });
 
       const collectResponse = await fetchReply.awaitMessageComponent({
         filter: (i) => i.user.id === interaction.user.id,
-        time: 60000,
+        time: 300000,
       });
 
       const filterJobsByStatus = (status) => {
@@ -123,6 +126,7 @@ module.exports = {
 
         await collectResponse.reply({
           embeds: [embeddedMessage],
+          ephemeral: true,
         });
       } else if (collectResponse.customId === "waiting_button") {
         const waitingJobs = filterJobsByStatus("waiting");
@@ -134,6 +138,7 @@ module.exports = {
 
         await collectResponse.reply({
           embeds: [embeddedMessage],
+          ephemeral: true,
         });
       } else if (collectResponse.customId === "accepted_button") {
         const acceptedJobs = filterJobsByStatus("accepted");
@@ -145,6 +150,7 @@ module.exports = {
 
         await collectResponse.reply({
           embeds: [embeddedMessage],
+          ephemeral: true,
         });
       } else if (collectResponse.customId === "rejected_button") {
         const rejectedJobs = filterJobsByStatus("rejected");
@@ -156,11 +162,15 @@ module.exports = {
 
         await collectResponse.reply({
           embeds: [embeddedMessage],
+          ephemeral: true,
         });
       }
     } catch (err) {
       console.log(err);
-      await interaction.editReply("Session Timed Out!");
+      await interaction.editReply({
+        content: "An error occurred while getting your job postings.",
+        ephemeral: true,
+      });
     }
   },
 };

@@ -13,7 +13,10 @@ module.exports = {
       });
 
       if (!findUser || !findUser.jobs) {
-        await interaction.reply({ content: "You have no job postings to update!" });
+        await interaction.reply({
+          content: "You have no job postings to update!",
+          ephemeral: true,
+        });
       } else {
         const jobs = findUser.jobs.map((job) => ({
           label: job.name,
@@ -32,6 +35,7 @@ module.exports = {
           content: "Please select a job posting to remove.",
           components: [selectJobPosting],
           fetchReply: true,
+          ephemeral: true,
         });
 
         const collectorFilter = (i) => i.user.id === interaction.user.id;
@@ -49,11 +53,15 @@ module.exports = {
 
         await status.reply({
           content: `Job posting for ${job.name} has been removed.`,
+          ephemeral: true,
         });
       }
     } catch (err) {
       console.log(err);
-      await interaction.editReply({ content: "Something went wrong!" });
+      await interaction.editReply({
+        content: "Something went wrong!",
+        ephemeral: true,
+      });
     }
   },
 };

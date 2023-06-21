@@ -48,6 +48,7 @@ module.exports = {
             .setCustomId("resume")
             .setStyle(TextInputStyle.Paragraph)
             .setRequired(true)
+            .setEphemeral(true)
         ),
         new ActionRowBuilder().setComponents(
           new TextInputBuilder()
@@ -55,6 +56,7 @@ module.exports = {
             .setCustomId("jobPostingDescription")
             .setStyle(TextInputStyle.Paragraph)
             .setRequired(true)
+            .setEphemeral(true)
         )
       );
 
