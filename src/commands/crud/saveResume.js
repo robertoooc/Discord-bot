@@ -19,27 +19,45 @@ async function getResume(user, interaction) {
         content: "You have no resume to view!",
         ephemeral: true,
         components: [],
-      })
+      });
     }
 
     const resume = findUser.resume;
-    if (resume.length > 2000) {
-      const splitResume = resume.match(/.{1,2000}/g);
-      for (const resumeChunk of splitResume) {
-        await interaction.reply({
-          content: resumeChunk,
-          ephemeral: true,
-        });
-      }
-    } else {
-      await interaction.reply({
+
+    if (resume.length <= 2000) {
+      await interaction.editReply({
         content: resume,
+        ephemeral: true,
+      });
+      return;
+    }
+
+    const lines = resume.split("\n");
+    let currentPart = "";
+    let parts = [];
+
+    for (const line of lines) {
+      if (currentPart.length + line.length <= 2000) {
+        currentPart += line + "\n";
+      } else {
+        parts.push(currentPart);
+        currentPart = line + "\n";
+      }
+    }
+
+    if (currentPart.length > 0) {
+      parts.push(currentPart);
+    }
+
+    for (let i = 0; i < parts.length; i++) {
+      await interaction.followUp({
+        content: parts[i],
         ephemeral: true,
       });
     }
   } catch (err) {
     console.error("Error retrieving resume:", err);
-    await interaction.reply({
+    await interaction.editReply({
       content: "An error occurred while retrieving your resume.",
       ephemeral: true,
     });
