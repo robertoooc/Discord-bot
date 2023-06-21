@@ -48,7 +48,6 @@ module.exports = {
           inline: true,
         }
       )
-      .setFooter("Click on the buttons below to see the job postings");
 
     const seeAll = new ButtonBuilder()
       .setCustomId("see_all")
