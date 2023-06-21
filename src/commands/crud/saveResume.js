@@ -5,58 +5,143 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require("discord.js");
+const { SelectMenuBuilder } = require("@discordjs/builders");
 const db = require("../../models");
-module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("saveresume")
-    .setDescription("Don't want to paste your resume every time? Save it!"),
-  async execute(interaction) {
-    const modal = new ModalBuilder()
-      .setTitle("Save Resume")
-      .setCustomId("saveResume")
-      .setComponents(
-        new ActionRowBuilder().setComponents(
-          new TextInputBuilder()
-            .setLabel("Enter Your Resume")
-            .setCustomId("resume")
-            .setStyle(TextInputStyle.Paragraph)
-            .setRequired(true)
-        )
-      );
 
-    await interaction.showModal(modal);
-    try {
-      const modalResponse = await interaction.awaitModalSubmit({
-        filter: (i) =>
-          i.customId === "saveResume" && i.user.id === interaction.user.id,
-        time: 300000,
-      });
-      if (modalResponse.isModalSubmit()) {
-        await modalResponse.reply({
-          content: "Saving Resume...",
-          ephemeral: true,
-        });
-        const resume = modalResponse.fields.getTextInputValue("resume");
-        const user = await db.User.findOne({
-          discordId: interaction.user.id,
-        });
-        if (user) {
-          user.resume = resume;
-          await user.save();
-        } else {
-          await db.User.create({
-            discordId: interaction.user.id,
-            username: interaction.user.username,
-            resume: resume,
-          });
-        }
-        await modalResponse.editReply({
-          content: `Your resume has been saved! \n ${resume}`,
+async function getResume(user, interaction) {
+  try {
+    const findUser = await db.User.findOne({
+      discordId: user.id,
+    });
+
+    if (!findUser || !findUser?.resume) {
+      return await interaction.editReply({
+        content: "You have no resume to view!",
+        ephemeral: true,
+        components: [],
+      })
+    }
+
+    const resume = findUser.resume;
+    if (resume.length > 2000) {
+      const splitResume = resume.match(/.{1,2000}/g);
+      for (const resumeChunk of splitResume) {
+        await interaction.reply({
+          content: resumeChunk,
           ephemeral: true,
         });
       }
+    } else {
+      await interaction.reply({
+        content: resume,
+        ephemeral: true,
+      });
+    }
+  } catch (err) {
+    console.error("Error retrieving resume:", err);
+    await interaction.reply({
+      content: "An error occurred while retrieving your resume.",
+      ephemeral: true,
+    });
+  }
+}
+
+async function updateResume(user, interaction, resume) {
+  try {
+    let findUser = await db.User.findOne({
+      discordId: user.id,
+    });
+
+    if (!findUser) {
+      findUser = await db.User.create({
+        discordId: user.id,
+        username: user.username,
+        resume: resume,
+      });
+    } else {
+      findUser.resume = resume;
+      await findUser.save();
+    }
+
+    return getResume(user, interaction);
+  } catch (err) {
+    console.error("Error updating resume:", err);
+    await interaction.reply({
+      content: "An error occurred while updating your resume.",
+      ephemeral: true,
+    });
+  }
+}
+
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName("resume")
+    .setDescription("Save or view your resume."),
+  async execute(interaction) {
+    try {
+      const actionRowComponent = new ActionRowBuilder().setComponents(
+        new SelectMenuBuilder()
+          .setCustomId("resume_options")
+          .setOptions([
+            { label: "View Resume", value: "view" },
+            { label: "Update Resume", value: "update" },
+          ])
+          .setMinValues(1)
+          .setMaxValues(1)
+      );
+      const response = await interaction.reply({
+        content: "Please select an option",
+        components: [actionRowComponent],
+        fetchReply: true,
+      });
+
+      const collectorFilter = (i) => i.user.id === interaction.user.id;
+
+      const status = await response.awaitMessageComponent({
+        filter: collectorFilter,
+        time: 600000,
+      });
+
+      if (status.values[0] === "view") {
+        await getResume(status.user, interaction);
+      } else if (status.values[0] === "update") {
+        const modal = new ModalBuilder()
+          .setTitle("Update Resume")
+          .setCustomId("updateResume")
+          .setComponents(
+            new ActionRowBuilder().setComponents(
+              new TextInputBuilder()
+                .setLabel("Enter Your Resume")
+                .setCustomId("resume")
+                .setStyle(TextInputStyle.Paragraph)
+                .setRequired(true)
+            )
+          );
+
+        await status.showModal(modal);
+
+        const modalResponse = await interaction.awaitModalSubmit({
+          filter: (i) =>
+            i.customId === "updateResume" && i.user.id === interaction.user.id,
+          time: 300000,
+        });
+
+        if (modalResponse.isModalSubmit()) {
+          await modalResponse.reply({
+            content: "Updating Resume...",
+            ephemeral: true,
+          });
+          const resume = modalResponse.fields.getTextInputValue("resume");
+
+          await updateResume(status.user, interaction, resume);
+        }
+      }
     } catch (err) {
-      console.log(err);
+      console.error("Error executing resume command:", err);
+      await interaction.reply({
+        content: "An error occurred while executing the resume command.",
+        ephemeral: true,
+      });
     }
   },
 };
