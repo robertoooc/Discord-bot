@@ -4,10 +4,12 @@ const {
   ActionRowBuilder,
   TextInputBuilder,
   TextInputStyle,
+  EmbedBuilder,
+  ButtonBuilder,
 } = require("discord.js");
 require(`dotenv`).config();
 const { Configuration, OpenAIApi } = require("openai");
-
+const db = require("../../models");
 const configuration = new Configuration({
   apiKey: process.env.API_KEY,
 });
@@ -38,29 +40,45 @@ module.exports = {
     .setName("createcoverletter")
     .setDescription("Generate a Cover Letter"),
   async execute(interaction) {
+    // let oldResume = false;
+    const findUser = await db.User.findOne({
+      discordId: interaction.user.id,
+    }).populate("resume");
+    let component;
+    if (!findUser || findUser?.resume == null) {
+      component = new ActionRowBuilder().setComponents(
+        new TextInputBuilder()
+          .setLabel("Resume")
+          .setCustomId("resume")
+          .setStyle(TextInputStyle.Paragraph)
+          .setRequired(true)
+      );
+    } else if (findUser?.resume != null) {
+      component = new ActionRowBuilder().setComponents(
+        new TextInputBuilder()
+          .setLabel("Resume (leave blank to use saved resume)")
+          .setCustomId("resume")
+          .setStyle(TextInputStyle.Paragraph)
+          .setRequired(false)
+      );
+    }
+
     const modal = new ModalBuilder()
       .setTitle("Cover Letter Generator")
       .setCustomId("coverLetter")
       .setComponents(
+        component,
         new ActionRowBuilder().setComponents(
           new TextInputBuilder()
-            .setLabel("Enter Your Resume")
-            .setCustomId("resume")
-            .setStyle(TextInputStyle.Paragraph)
-            .setRequired(true)
-            .setEphemeral(true)
-        ),
-        new ActionRowBuilder().setComponents(
-          new TextInputBuilder()
-            .setLabel("Enter the Job Posting Description")
+            .setLabel("Job Posting Description")
             .setCustomId("jobPostingDescription")
             .setStyle(TextInputStyle.Paragraph)
             .setRequired(true)
-            .setEphemeral(true)
         )
       );
 
     await interaction.showModal(modal);
+
     try {
       const modalResponse = await interaction.awaitModalSubmit({
         filter: (i) =>
@@ -72,15 +90,53 @@ module.exports = {
           content: "Generating Cover Letter...",
           ephemeral: true,
         });
-        const resume = modalResponse.fields.getTextInputValue("resume");
+
+        console.log(modalResponse.fields.getTextInputValue("resume").length);
+        const resume =
+          modalResponse.fields.getTextInputValue("resume").length > 0
+            ? modalResponse.fields.getTextInputValue("resume")
+            : findUser.resume;
+
         const jobPosting = modalResponse.fields.getTextInputValue(
           "jobPostingDescription"
         );
         const coverLetter = await generateCoverLetter(resume, jobPosting);
-        await modalResponse.editReply({
-          content: `Here is your cover letter: \n ${coverLetter}`,
-          ephemeral: true,
-        });
+
+        if (coverLetter.length <= 2000) {
+          await modalResponse.editReply({
+            content: coverLetter,
+            ephemeral: true,
+          });
+          return;
+        }
+
+        const lines = coverLetter.split("\n");
+        let currentPart = "";
+        let parts = [];
+
+        for (const line of lines) {
+          if (currentPart.length + line.length <= 2000) {
+            currentPart += line + "\n";
+          } else {
+            parts.push(currentPart);
+            currentPart = line + "\n";
+          }
+        }
+
+        if (currentPart.length > 0) {
+          parts.push(currentPart);
+        }
+
+        for (let i = 0; i < parts.length; i++) {
+          await modalResponse.followUp({
+            content: parts[i],
+            ephemeral: true,
+          });
+        }
+        // await modalResponse.editReply({
+        //   content: `Here is your cover letter: \n ${coverLetter}`,
+        //   ephemeral: true,
+        // });
       }
     } catch (err) {
       console.log(err);
