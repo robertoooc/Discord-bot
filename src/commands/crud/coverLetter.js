@@ -4,8 +4,6 @@ const {
   ActionRowBuilder,
   TextInputBuilder,
   TextInputStyle,
-  EmbedBuilder,
-  ButtonBuilder,
 } = require("discord.js");
 require(`dotenv`).config();
 const { Configuration, OpenAIApi } = require("openai");
@@ -28,10 +26,10 @@ async function generateCoverLetter(resume, jobPosting) {
       presence_penalty: 0.6,
     });
 
-    // console.log(response.data.choices[0].text.trim());
     return response.data.choices[0].text.trim();
   } catch (error) {
     console.log("Error:", error.response.data.error);
+    return "Error occured generating cover letter.";
   }
 }
 
@@ -90,7 +88,6 @@ module.exports = {
           ephemeral: true,
         });
 
-        console.log(modalResponse.fields.getTextInputValue("resume").length);
         const resume =
           modalResponse.fields.getTextInputValue("resume").length > 0
             ? modalResponse.fields.getTextInputValue("resume")
@@ -132,10 +129,6 @@ module.exports = {
             ephemeral: true,
           });
         }
-        // await modalResponse.editReply({
-        //   content: `Here is your cover letter: \n ${coverLetter}`,
-        //   ephemeral: true,
-        // });
       }
     } catch (err) {
       console.log(err);
